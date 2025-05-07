@@ -15,10 +15,10 @@ class EvictionVisualizer:
 
     def _compute_eviction_counts(self):
         """
-        Private method to calculate eviction counts by borough and year.
+        Private method to calculate eviction counts by borough and day (Executed Date).
         """
         self._eviction_counts = (
-            self._df.groupby(['BOROUGH', 'Year'])
+            self._df.groupby(['BOROUGH', 'Executed Date'])
             .size()
             .unstack(fill_value=0)
         )
@@ -33,12 +33,12 @@ class EvictionVisualizer:
 
     def plot_evictions_over_time(self):
         """
-        Generates a line plot of evictions per borough over time.
+        Generates a line plot of daily evictions per borough over time.
         """
         eviction_counts = self.get_eviction_counts()
-        eviction_counts.T.plot(figsize=(12, 6))
-        plt.title("Evictions per Borough by Year")
-        plt.xlabel("Year")
+        eviction_counts.T.plot(figsize=(14, 6), linewidth=1)
+        plt.title("Daily Evictions per Borough Over Time")
+        plt.xlabel("Date")
         plt.ylabel("Number of Evictions")
         plt.legend(title="Borough")
         plt.grid(True)
@@ -52,7 +52,7 @@ class EvictionVisualizer:
         This function filters and bins geographic coordinates (lat/lon) from the dataset
         and stores it for time-based geographic plotting.
         """
-        df_geo = self._df[["Latitude", "Longitude", "Year"]].copy()
+        df_geo = self._df[["Latitude", "Longitude", "Year", 'Executed Date']].copy()
         df_geo["lat_bin"] = df_geo["Latitude"].round(3)
         df_geo["lon_bin"] = df_geo["Longitude"].round(3)
         df_geo = df_geo.sort_values("Year")
@@ -91,9 +91,9 @@ class EvictionVisualizer:
         if self._df_geo is None:
             self.compute_geo()
         geo = self._df_geo
-        years = sorted(geo["Year"].unique())
+        years = sorted(geo["Executed Date"].unique())
         heat_data = [
-            geo[geo["Year"] == year][["lat_bin", "lon_bin"]].values.tolist()
+            geo[geo["Executed Date"] == year][["lat_bin", "lon_bin"]].values.tolist()
             for year in years
         ]
 
