@@ -4,17 +4,16 @@ def load_eviction(data_path):
     """
     Load and preprocess eviction data from a CSV file.
     
+    This function reads eviction data from a CSV file, removes the 'Eviction Apartment Number' column,
+    drops rows with missing values and duplicate entries, converts the 'Executed Date' column to datetime format,
+    and extracts the year from the date into a new 'Year' column. It also converts several numeric ID columns
+    to string format for consistency.
+    
     Parameters:
-    data_path (str): The path to the CSV file containing the eviction data.
+    data_path (str): The file path to the CSV file containing the eviction data.
     
     Returns:
-    pandas.DataFrame: A preprocessed DataFrame containing the eviction data.
-    
-    The function reads the CSV file using pandas, drops the 'Eviction Apartment Number' column,
-    handles missing values by dropping rows with missing values, and removes duplicate entries.
-    It also converts the 'Executed Date' column to datetime format and extracts the month and year.
-    Finally, it prints the number of rows dropped due to missing values and duplicate entries,
-    and the shape of the resulting DataFrame.
+    pandas.DataFrame: A preprocessed DataFrame containing the cleaned eviction data with appropriate data types.
     """
     df = pd.read_csv(data_path)
     df = df.drop('Eviction Apartment Number', axis=1)
@@ -25,9 +24,18 @@ def load_eviction(data_path):
     df = df.drop_duplicates()
     
     df['Executed Date'] = pd.to_datetime(df['Executed Date'])
-    df['Month'] = df['Executed Date'].dt.month
     df['Year'] = df['Executed Date'].dt.year
     print("Eviction data with shape {} loaded.".format(df.shape))
+    
+    df['Community Board'] = df['Community Board'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else '')
+    df['Council District'] = df['Council District'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else '')
+    df['Census Tract'] = df['Census Tract'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else '')
+    df['BIN'] = df['BIN'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else '')
+    df['BBL'] = df['BBL'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else '')
+    
+
+    print("After conversion:")
+    print(df.dtypes)
     
     return df
 
