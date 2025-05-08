@@ -6,14 +6,13 @@ def load_eviction(data_path):
     
     This function reads eviction data from a CSV file, removes the 'Eviction Apartment Number' column,
     drops rows with missing values and duplicate entries, converts the 'Executed Date' column to datetime format,
-    and extracts the year from the date into a new 'Year' column. It also converts several numeric ID columns
-    to string format for consistency.
+    and extracts the year from the date into a new 'Year' column.
     
     Parameters:
     data_path (str): The file path to the CSV file containing the eviction data.
     
     Returns:
-    pandas.DataFrame: A preprocessed DataFrame containing the cleaned eviction data with appropriate data types.
+    pandas.DataFrame: A preprocessed DataFrame containing the cleaned eviction data.
     """
     df = pd.read_csv(data_path)
     df = df.drop('Eviction Apartment Number', axis=1)
@@ -26,17 +25,7 @@ def load_eviction(data_path):
     df['Executed Date'] = pd.to_datetime(df['Executed Date'])
     df['Year'] = df['Executed Date'].dt.year
     print("Eviction data with shape {} loaded.".format(df.shape))
-    
-    df['Community Board'] = df['Community Board'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else '')
-    df['Council District'] = df['Council District'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else '')
-    df['Census Tract'] = df['Census Tract'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else '')
-    df['BIN'] = df['BIN'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else '')
-    df['BBL'] = df['BBL'].apply(lambda x: str(int(float(x))) if pd.notnull(x) else '')
-    
 
-    print("After conversion:")
-    print(df.dtypes)
-    
     return df
 
 def save_data(data_path, output_path):

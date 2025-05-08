@@ -28,6 +28,28 @@ def feature_processing(df):
     return X_rep, replicated_df
     
 def create_bgmm(df):
+    """
+    Create a Bayesian Gaussian Mixture Model based on eviction data.
+    
+    This function processes the input dataframe to create a weighted representation
+    of eviction data, fits a Bayesian Gaussian Mixture Model to the geographic coordinates,
+    and assigns cluster labels to each original data point based on the most frequent
+    cluster assignment among its weighted replications.
+    
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        Input dataframe containing at minimum 'eviction_sum', 'longitude', and 'latitude' columns.
+        
+    Returns
+    -------
+    tuple
+        A tuple containing:
+        - bgmm : BayesianGaussianMixture
+            The fitted Bayesian Gaussian Mixture Model.
+        - cluster_map : pandas.Series
+            A mapping from original dataframe indices to assigned cluster labels.
+    """
     X_rep, replicated_df = feature_processing(df)
     bgmm = BayesianGaussianMixture(n_components=30, random_state=0)
     replicated_df['cluster'] = bgmm.fit_predict(X_rep)
