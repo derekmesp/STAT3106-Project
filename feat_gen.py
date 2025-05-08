@@ -1,22 +1,26 @@
 def pivot_data(df):
     """
-    This function takes a DataFrame containing eviction data and performs data preprocessing and feature generation.
-    It groups the data by latitude, longitude, NTA (Neighborhood Tabulation Area), and executed date,
-    then pivots the data to create a time series representation of evictions per NTA.
-    Finally, it calculates the sum of evictions for each NTA.
-
+    Transforms eviction data into a pivot table format organized by location and date.
+    
+    This function processes eviction data by binning geographic coordinates, grouping by
+    location and date, and creating a pivot table that shows eviction counts over time
+    for each location. It also calculates the total number of evictions for each location.
+    
     Parameters:
-    df (pandas.DataFrame): A DataFrame containing eviction data with columns 'Latitude', 'Longitude', 'Executed Date', and 'NTA'.
-
+    -----------
+    df : pandas.DataFrame
+        Input DataFrame containing eviction data with at least the following columns:
+        'Latitude', 'Longitude', 'Executed Date', and 'NTA' (Neighborhood Tabulation Area).
+    
     Returns:
-    pivot_df (pandas.DataFrame): A DataFrame with the following columns:
-        - 'lat_lon': A tuple of latitude and longitude rounded to 3 decimal places.
-        - 'NTA': Neighborhood Tabulation Area.
-        - 'Executed Date': Date of eviction.
-        - 'count': Count of evictions for each combination of 'lat_lon', 'NTA', and 'Executed Date'.
-        - 'latitude': Latitude rounded to 3 decimal places.
-        - 'longitude': Longitude rounded to 3 decimal places.
-        - 'eviction_sum': Sum of evictions for each NTA.
+    --------
+    tuple:
+        - pivot_df : pandas.DataFrame
+            A pivot table with locations (lat_lon, NTA) as index and dates as columns.
+            Each cell contains the count of evictions for that location and date.
+            Additional columns include 'latitude', 'longitude', and 'eviction_sum'.
+        - df_geo : pandas.DataFrame
+            Processed geographic data with binned coordinates and lat_lon pairs.
     """
     df_geo = df[['Latitude', 'Longitude', 'Executed Date', 'NTA']]
     df_geo = df_geo.copy()  
@@ -48,4 +52,4 @@ def pivot_data(df):
     non_date_columns = ['NTA', 'latitude', 'longitude']
     date_columns = [col for col in pivot_df.columns if col not in non_date_columns]
     pivot_df['eviction_sum'] = pivot_df[date_columns].sum(axis=1) 
-    return pivot_df
+    return pivot_df, df_geo
