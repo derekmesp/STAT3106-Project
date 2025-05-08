@@ -52,10 +52,9 @@ class EvictionVisualizer:
         This function filters and bins geographic coordinates (lat/lon) from the dataset
         and stores it for time-based geographic plotting.
         """
-        df_geo = self._df[["Latitude", "Longitude", "Year", 'Executed Date']].copy()
+        df_geo = self._df[["Latitude", "Longitude", 'Year', 'Executed Date']].copy()
         df_geo["lat_bin"] = df_geo["Latitude"].round(3)
         df_geo["lon_bin"] = df_geo["Longitude"].round(3)
-        df_geo = df_geo.sort_values("Year")
         self._df_geo = df_geo
 
     def get_geo_df(self):
@@ -91,16 +90,16 @@ class EvictionVisualizer:
         if self._df_geo is None:
             self.compute_geo()
         geo = self._df_geo
-        years = sorted(geo["Executed Date"].unique())
+        dates = sorted(geo["Executed Date"].unique())
         heat_data = [
-            geo[geo["Executed Date"] == year][["lat_bin", "lon_bin"]].values.tolist()
-            for year in years
+            geo[geo["Executed Date"] == date][["lat_bin", "lon_bin"]].values.tolist()
+            for date in dates
         ]
 
         m = folium.Map(location=[40.7128, -74.0060], zoom_start=11)
         HeatMapWithTime(
             data=heat_data,
-            index=years,
+            index=dates,
             radius=radius,
             auto_play=auto_play,
             max_opacity=max_opacity
