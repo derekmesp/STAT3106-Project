@@ -9,29 +9,31 @@ from statsmodels.stats.multitest import multipletests
 
 def cluster_time_series(df, clusters, radius=8, auto_play=True, max_opacity=0.8):
     """
-    Creates and displays an interactive time series heatmap of specified clusters.
+    Creates and displays an interactive time series heatmap of eviction clusters.
     
-    This function filters the input dataframe for the specified clusters, then creates
-    a time series heatmap showing the geographical distribution of data points over time.
-    The map is centered on New York City coordinates.
+    This function filters the input DataFrame for specified clusters, generates a time series
+    of geographical data points, and visualizes them as an interactive heatmap that changes
+    over time. It also identifies and prints the top 3 Neighborhood Tabulation Areas (NTAs)
+    for each cluster.
     
     Parameters
     ----------
     df : pandas.DataFrame
-        DataFrame containing the data with columns 'cluster', 'Executed Date', 'lat_bin', and 'lon_bin'.
+        DataFrame containing eviction data with 'cluster', 'Executed Date', 'lat_bin', 'lon_bin',
+        and 'NTA' columns.
     clusters : list
         List of cluster identifiers to include in the visualization.
     radius : int, optional
-        Radius of each data point on the heatmap in pixels (default is 8).
+        Radius of each point in the heatmap, by default 8.
     auto_play : bool, optional
-        Whether the time series animation should play automatically (default is True).
+        Whether the time series animation should play automatically, by default True.
     max_opacity : float, optional
-        Maximum opacity value for the heatmap points, between 0 and 1 (default is 0.8).
+        Maximum opacity value for the heatmap points, by default 0.8.
     
     Returns
     -------
-    None
-        Displays the interactive folium map in the output.
+    folium.Map
+        The interactive folium map object with the time series heatmap.
     """
     filtered_df = df[df['cluster'].isin(clusters)]
 
@@ -52,6 +54,7 @@ def cluster_time_series(df, clusters, radius=8, auto_play=True, max_opacity=0.8)
                 max_opacity=max_opacity
         ).add_to(m)
     display(m)
+    return m
     
 def graph_demographic(df):
     """

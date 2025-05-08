@@ -105,6 +105,7 @@ class EvictionVisualizer:
             max_opacity=max_opacity
         ).add_to(m)
         display(m)
+        return m
     def plot_static_heatmap(self):
         """
         Plots a static heatmap of evictions using HeatMap.
@@ -124,6 +125,7 @@ class EvictionVisualizer:
         heat_data = geo[["lat_bin", "lon_bin"]].values.tolist()
         HeatMap(heat_data, radius=10).add_to(m)
         display(m)
+        return m
 
  
                 

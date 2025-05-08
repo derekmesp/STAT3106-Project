@@ -1,4 +1,13 @@
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.mixture import BayesianGaussianMixture
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    confusion_matrix, classification_report,
+    accuracy_score, precision_score, recall_score
+)
+from sklearn.pipeline import Pipeline
 
 def feature_processing(df):
     """
@@ -55,3 +64,105 @@ def create_bgmm(df):
     replicated_df['cluster'] = bgmm.fit_predict(X_rep)
     cluster_map = replicated_df.groupby(replicated_df.index)['cluster'].agg(lambda x: x.value_counts().idxmax())
     return bgmm, cluster_map
+
+def logistic_model(X, Y):
+    """
+    Create and evaluate a logistic regression model for classification.
+    
+    This function builds a pipeline with standardization and logistic regression,
+    performs cross-validation, trains the model on the training set, and evaluates
+    it on the test set.
+    
+    Parameters
+    ----------
+    X : pandas.DataFrame
+        Feature matrix containing predictor variables. Columns 'cluster' and 'NTA'
+        will be dropped if present.
+    Y : pandas.Series or array-like
+        Target variable for classification.
+        
+    Returns
+    -------
+    tuple
+        A tuple containing:
+        - pipeline : sklearn.pipeline.Pipeline
+            The fitted pipeline with StandardScaler and LogisticRegression.
+        - cv_score_mean : float
+            Mean cross-validation score from 5-fold cross-validation.
+        - cm : numpy.ndarray
+            Confusion matrix of predictions on the test set.
+        - report : str
+            Classification report including precision, recall, f1-score, and support.
+    """
+    X = X.drop(columns=[col for col in ['cluster', 'NTA'] if col in X.columns])
+    
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, Y, test_size=0.2, random_state=0, stratify=Y
+    )
+    
+    pipeline = Pipeline([
+    ('scaler', StandardScaler()),
+    ('logreg', LogisticRegression(random_state=0, class_weight='balanced', max_iter=1000))
+    ])
+    
+    cv_scores = cross_val_score(pipeline, X_train, y_train, cv=5)
+
+    pipeline.fit(X_train, y_train)
+    y_pred = pipeline.predict(X_test)
+
+    cm = confusion_matrix(y_test, y_pred)
+    return pipeline, cv_scores.mean(), cm, classification_report(y_test, y_pred)
+    
+def RandomForest_model(X, Y):
+    """
+    Create and evaluate a Random Forest model for classification.
+    
+    This function builds a pipeline with standardization and Random Forest classifier,
+    performs cross-validation, trains the model on the training set, and evaluates
+    it on the test set.
+    
+    Parameters
+    ----------
+    X : pandas.DataFrame
+        Feature matrix containing predictor variables. Columns 'cluster' and 'NTA'
+        will be dropped if present.
+    Y : pandas.Series or array-like
+        Target variable for classification.
+        
+    Returns
+    -------
+    tuple
+        A tuple containing:
+        - pipeline : sklearn.pipeline.Pipeline
+            The fitted pipeline with StandardScaler and RandomForestClassifier.
+        - cv_score_mean : float
+            Mean cross-validation score from 5-fold cross-validation.
+        - cm : numpy.ndarray
+            Confusion matrix of predictions on the test set.
+        - report : str
+            Classification report including precision, recall, f1-score, and support.
+    """
+    X = X.drop(columns=[col for col in ['cluster', 'NTA'] if col in X.columns])
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, Y, test_size=0.2, random_state=0, stratify=Y
+    )
+
+    pipeline = Pipeline([
+        ('scaler', StandardScaler()),  # Optional for trees, but harmless
+        ('rf', RandomForestClassifier(
+            n_estimators=100,
+            random_state=0,
+            class_weight='balanced',
+            max_depth=None,
+            n_jobs=-1
+        ))
+    ])
+
+    cv_scores = cross_val_score(pipeline, X_train, y_train, cv=5)
+
+    pipeline.fit(X_train, y_train)
+    y_pred = pipeline.predict(X_test)
+
+    cm = confusion_matrix(y_test, y_pred)
+    return pipeline, cv_scores.mean(), cm, classification_report(y_test, y_pred)
